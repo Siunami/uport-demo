@@ -19,6 +19,7 @@ export function issueToken() {
       type: 'GET',
       crossDomain: true
     }).done(function(data){
+      // TODO: update score and tokens collected for user
       console.log(data);
     })
   }
@@ -38,7 +39,7 @@ export function issueToken() {
         var isRegistered = data;
         if (isRegistered){
           console.log("User is registered");
-          issueToken(specificNetworkAddress, 1);
+          // issueToken(specificNetworkAddress, 1);
         } else {
           console.log("User is not registered");
           // TODO: Add a notification on UI for not registered.

@@ -67,6 +67,7 @@ export function signUser() {
       console.log(error);
       console.log(response);
       if (error) { throw error }
+      // TODO: update tokens redeemed for user
       $('#registeredUsers').text(response);
       console.log(response)
     });
