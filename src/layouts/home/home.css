@@ -1,0 +1,15 @@
+th, td {
+    padding: 35px;
+    text-align: left;
+}
+
+tr:hover {background-color: #888888;}
+
+tr:nth-child(even) {background-color: #f2f2f2;}
+
+tr:nth-child(even):hover {background-color: #888888;}
+
+th {
+    background-color: rgb(87, 59, 176);
+    color: white;
+}
