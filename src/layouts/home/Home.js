@@ -83,6 +83,7 @@ class Home extends Component {
               <tbody>
                 <tr>
                   <th>Position</th>
+                  <th>User</th>
                   <th>Name</th>
                   <th>Score</th>
                   <th>Tokens Collected</th>
@@ -91,7 +92,8 @@ class Home extends Component {
                 {users.map(user => (
                   <tr key={user.name}>
                     <td>1</td>
-                    <td>{user.name}</td>
+                    <td><img className="avatar" src={user.avatar.uri}/></td>
+                    <td><p id="avater-name">{user.name}</p></td>
                     <td>{user.score}</td>
                     <td>{user.tokensCollected}</td>
                     <td>{user.tokensRedeemed}</td>

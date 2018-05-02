@@ -11,6 +11,20 @@ import { fire } from './../../../firebase'
 //   }
 // }
 
+function updateScore(userAddress){
+  var reference = fire.database().ref('users')
+  reference.orderByChild('publicKey').equalTo(userAddress).once('value').then(function(snapshot){
+    var keys = Object.keys(snapshot.val());
+    var user = snapshot.val()[keys[0]];
+    var key = keys[0];
+    user.score = user.score+1;
+    user.tokensCollected = user.tokensCollected+1;
+    var returnObject = {}
+    returnObject[key] = user;
+    fire.database().ref('users').update(returnObject);
+  });
+}
+
 export function issueToken() {
   function issueToken(userAddress, numTokens){
     console.log("Issued " + userAddress + " " + numTokens + " Token");
@@ -21,17 +35,7 @@ export function issueToken() {
       crossDomain: true
     }).done(function(data){
       // TODO: update score and tokens collected for user
-      var reference = fire.database().ref('users')
-      reference.orderByChild('publicKey').equalTo(userAddress).once('value').then(function(snapshot){
-        var keys = Object.keys(snapshot.val());
-        var user = snapshot.val()[keys[0]];
-        var key = keys[0];
-        user.score = user.score+1;
-        user.tokensCollected = user.tokensCollected+1;
-        var returnObject = {}
-        returnObject[key] = user;
-        fire.database().ref('users').update(returnObject);
-      });
+      updateScore(userAddress);
       console.log(data);
     })
   }
@@ -39,7 +43,7 @@ export function issueToken() {
   return function(dispatch) {
     uport.requestCredentials({
       requested: ['name', 'avatar', 'phone', 'country'],
-      notifications: true
+      notifications: true,
     }).then((userProfile) => {
       const userAddress = MNID.decode(userProfile.address);
       const specificNetworkAddress = userAddress.address
