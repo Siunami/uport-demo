@@ -13,7 +13,7 @@ coverage/
 # production
 build/
 dist/
-src/layouts/home/firebase.js
+src/firebase.js
 
 # misc
 .DS_Store

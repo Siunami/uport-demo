@@ -1,6 +1,7 @@
-import { uport, $, contract, web3, MNID } from './../../../util/connectors.js'
-import { browserHistory } from 'react-router'
-export const IDENTITY_ATTESTATION = 'IDENTITY_ATTESTATION'
+import { uport,web3, MNID } from './../../../util/connectors.js'
+import { fire } from './../../../firebase'
+// import { browserHistory } from 'react-router'
+// export const IDENTITY_ATTESTATION = 'IDENTITY_ATTESTATION'
 
 // For dispatching events to redux state
 // function userLoggedIn(attestation) {
@@ -10,52 +11,35 @@ export const IDENTITY_ATTESTATION = 'IDENTITY_ATTESTATION'
 //   }
 // }
 
-// // Callback handler for whether it was mined or not
-// const waitForMined = (txHash, response, pendingCB, successCB) => {
-//   if (response.blockNumber) {
-//     successCB()
-//   } else {
-//     pendingCB()
-//       pollingLoop(txHash, response, pendingCB, successCB)
-//   }
-// }
+// Callback handler for whether it was mined or not
+const waitForMined = (txHash, response, pendingCB, successCB) => {
+  if (response.blockNumber) {
+    successCB()
+  } else {
+    pendingCB()
+      pollingLoop(txHash, response, pendingCB, successCB)
+  }
+}
 
-// // Recursive polling to do continuous checks for when the transaction was mined
-// const pollingLoop = (txHash, response, pendingCB, successCB) => {
-//   setTimeout(function () {
-//     web3.eth.getTransaction(txHash, (error, response) => {
-//       if (error) { throw error }
-//         if (response === null) {
-//           response = { blockNumber: null }
-//         } // Some ETH nodes do not return pending tx
-//         waitForMined(txHash, response, pendingCB, successCB)
-//     })
-//   }, 1000) // check again in one sec.
-// }
+// Recursive polling to do continuous checks for when the transaction was mined
+const pollingLoop = (txHash, response, pendingCB, successCB) => {
+  setTimeout(function () {
+    web3.eth.getTransaction(txHash, (error, response) => {
+      if (error) { throw error }
+        if (response === null) {
+          response = { blockNumber: null }
+        } // Some ETH nodes do not return pending tx
+        waitForMined(txHash, response, pendingCB, successCB)
+    })
+  }, 1000) // check again in one sec.
+}
 
-// function MyContractSetup () {
-//   var myContractABI = [{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"INITIAL_SUPPLY","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}];
-//   var myContractAddress = "0x631f00B99A2eDF601b84E733ff7658Decb8dEA73";
-//   let MyContractABI = uport.contract(myContractABI)
-//   let MyContractObj = MyContractABI.at(myContractAddress)
-//   return MyContractObj
-// }
+// CALLING transfer with uport connect library breaks. Also, where does function get uport private key?
 
-// export function signUser() {
-//   return function(dispatch) {
-//     const MyContract = MyContractSetup()
-//     MyContract.transfer.call('0xd2de3673e37503d263eb72c875902d44d64a0e3b',100, (error, response) => {
-//       console.log(error);
-//       console.log(response);
-//       if (error) { throw error }
-//       console.log(response)
-//     });
-//   }
-// }
 function MyContractSetup () {
   var myContractABI = [{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"INITIAL_SUPPLY","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}];
   var myContractAddress = "0x631f00B99A2eDF601b84E733ff7658Decb8dEA73";
-  let MyContractABI = web3.eth.contract(myContractABI)
+  let MyContractABI = uport.contract(myContractABI)
   let MyContractObj = MyContractABI.at(myContractAddress)
   return MyContractObj
 }
@@ -63,16 +47,61 @@ function MyContractSetup () {
 export function signUser() {
   return function(dispatch) {
     const MyContract = MyContractSetup()
-    MyContract.balanceOf('0xd2de3673e37503d263eb72c875902d44d64a0e3b', (error, response) => {
-      console.log(error);
-      console.log(response);
+    // uport.requestCredentials().then((userProfile) => {
+    //         const userAddress = MNID.decode(userProfile.address);
+    //         const specificNetworkAddress = userAddress.address
+    //         // MyContract.transfer('0xd2de3673e37503d263eb72c875902d44d64a0e3b', 100.0);
+    // });
+
+    MyContract.transfer('0x3d36252840042D0B84Adc99a8c7ECF1F10a19E6a',100.0).then((error, txHash) => {
       if (error) { throw error }
-      // TODO: update tokens redeemed for user
-      $('#registeredUsers').text(response);
-      console.log(response)
+      waitForMined(txHash, { blockNumber: null }, // see next area
+        function pendingCB () {
+          // Signal to the user you're still waiting
+          // for a block confirmation
+          console.log("waiting");
+        },
+        function successCB (data) {
+          console.log("SUCCESS");
+          // Great Success!
+          // Likely you'll call some eventPublisherMethod(txHash, data)
+          console.log(data);
+        }
+      )
     });
   }
 }
+
+
+// // CALLING balanceOf with web3.eth works
+// function MyContractSetup () {
+//   var myContractABI = [{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"INITIAL_SUPPLY","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}];
+//   var myContractAddress = "0x631f00B99A2eDF601b84E733ff7658Decb8dEA73";
+//   let MyContractABI = web3.eth.contract(myContractABI)
+//   let MyContractObj = MyContractABI.at(myContractAddress)
+//   return MyContractObj
+// }
+
+// export function signUser() {
+//   return function(dispatch) {
+//     const MyContract = MyContractSetup()
+//     MyContract.balanceOf('0xd2de3673e37503d263eb72c875902d44d64a0e3b', (error, response) => {
+//       console.log(error);
+//       console.log(response);
+//       if (error) { throw error }
+//       // TODO: update tokens redeemed for user
+//       $('#registeredUsers').text(response);
+//       console.log(response)
+//     });
+//   }
+// }
+
+
+
+
+
+
+
 //     console.log(MyContract);
 //     uport.requestCredentials().then((userProfile) => {
 //       const userAddress = MNID.decode(userProfile.address);
@@ -92,6 +121,13 @@ export function signUser() {
 //       //     console.log("User does not have enough tokens");
 //       //   }
 //       // })
+
+
+
+
+
+
+
 
 //       MyContract.transfer.call('0x3d36252840042d0b84adc99a8c7ecf1f10a19e6a', 100, (error, response) => {
 //           if (error) { throw error }

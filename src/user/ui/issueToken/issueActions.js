@@ -1,6 +1,7 @@
 import { uport, $, contract, web3, MNID } from './../../../util/connectors.js'
 import { browserHistory } from 'react-router'
 export const IDENTITY_ATTESTATION = 'IDENTITY_ATTESTATION'
+import { fire } from './../../../firebase'
 
 // For dispatching events to redux state
 // function userLoggedIn(attestation) {
@@ -20,6 +21,17 @@ export function issueToken() {
       crossDomain: true
     }).done(function(data){
       // TODO: update score and tokens collected for user
+      var reference = fire.database().ref('users')
+      reference.orderByChild('publicKey').equalTo(userAddress).once('value').then(function(snapshot){
+        var keys = Object.keys(snapshot.val());
+        var user = snapshot.val()[keys[0]];
+        var key = keys[0];
+        user.score = user.score+1;
+        user.tokensCollected = user.tokensCollected+1;
+        var returnObject = {}
+        returnObject[key] = user;
+        fire.database().ref('users').update(returnObject);
+      });
       console.log(data);
     })
   }
@@ -39,7 +51,7 @@ export function issueToken() {
         var isRegistered = data;
         if (isRegistered){
           console.log("User is registered");
-          // issueToken(specificNetworkAddress, 1);
+          issueToken(specificNetworkAddress, 1);
         } else {
           console.log("User is not registered");
           // TODO: Add a notification on UI for not registered.

@@ -4,7 +4,7 @@ import IssueButtonContainer from '../../user/ui/issueToken/issueContainer'
 import SignButtonContainer from '../../user/ui/signingbutton/signContainer'
 import { POINT_CONVERSION_UNCOMPRESSED } from 'constants';
 import './home.css'
-import { fire } from './firebase'
+import { fire } from './../../firebase'
 
 
 
@@ -17,15 +17,32 @@ class Home extends Component {
   }
 
   componentDidMount(){
+    // TODO: Needs to update for any score changes as well
     var that = this;
     var reference = fire.database().ref('users')
     console.log(reference);
+
+    reference.on('value',function(snapshot){
+      var users = snapshot.val();
+      var list = [];
+      var keys = Object.keys(users);
+      for (var i = 0; i < keys.length; i++){
+        console.log(users[keys[i]]);
+        list.push(users[keys[i]]);
+      }
+      var sortedList = list.sort(function(a, b){
+        return b.score-a.score
+      })
+      console.log(sortedList)
+      that.setState({users: sortedList})
+    });
+
     reference.on("child_added",function(snapshot){
       var users = snapshot.val();
       var list = that.state.users
       list.push(users)
       var sortedList = list.sort(function(a, b){
-        return b.Score-a.Score
+        return b.score-a.score
       })
       that.setState({users: sortedList})
     });
@@ -37,7 +54,7 @@ class Home extends Component {
         return el.name !== users.name;
       })
       var sortedList = newList.sort(function(a, b){
-        return b.Score-a.Score
+        return b.score-a.score
       })
       that.setState({users: sortedList})
     });
@@ -52,13 +69,14 @@ class Home extends Component {
     //   })
     // });
   }
+  // TODO: Tokens collected and tokens redeemed get actual user values.
   render() {
     const { users } = this.state;
     return(
       <main className="container">
         <div className="pure-g">
           <div className="pure-u-1-1">
-            <h1>Good to Go!</h1>
+            <h1>Treasure Hunt Leaderboard</h1>
             <IssueButtonContainer />
             <SignButtonContainer />
             <table>
@@ -74,9 +92,9 @@ class Home extends Component {
                   <tr key={user.name}>
                     <td>1</td>
                     <td>{user.name}</td>
-                    <td>{user.Score}</td>
-                    <td>0</td>
-                    <td>0</td>
+                    <td>{user.score}</td>
+                    <td>{user.tokensCollected}</td>
+                    <td>{user.tokensRedeemed}</td>
                   </tr>
                 ))}
               </tbody>
