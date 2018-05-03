@@ -79,6 +79,7 @@ class Home extends Component {
             <h1>Treasure Hunt Leaderboard</h1>
             <IssueButtonContainer />
             <SignButtonContainer />
+            <div className="kqr"></div>
             <table>
               <tbody>
                 <tr>

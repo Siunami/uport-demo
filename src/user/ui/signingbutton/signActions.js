@@ -50,13 +50,10 @@ export function signUser() {
     uport.requestCredentials({
       requested: ['avatar']
     }).then((userProfile) => {
-      console.log(userProfile);
       const userAddress = MNID.decode(userProfile.address);
       const specificNetworkAddress = userAddress.address
-      console.log(userAddress);
-      console.log(specificNetworkAddress);
-      // MyContract.transfer('0xd2de3673e37503d263eb72c875902d44d64a0e3b', 100.0);
       MyContract.transfer('0x3d36252840042D0B84Adc99a8c7ECF1F10a19E6a',100.0).then(function(error, txHash) {
+        // TODO: Problem, hits this firebase code before transaction settles.
           var reference = fire.database().ref('users')
           reference.orderByChild('publicKey').equalTo(specificNetworkAddress).once('value').then(function(snapshot){
             var keys = Object.keys(snapshot.val());

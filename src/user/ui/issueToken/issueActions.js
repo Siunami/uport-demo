@@ -2,6 +2,7 @@ import { uport, $, contract, web3, MNID } from './../../../util/connectors.js'
 import { browserHistory } from 'react-router'
 export const IDENTITY_ATTESTATION = 'IDENTITY_ATTESTATION'
 import { fire } from './../../../firebase'
+import kjua from 'kjua'
 
 // For dispatching events to redux state
 // function userLoggedIn(attestation) {
@@ -43,24 +44,46 @@ export function issueToken() {
   return function(dispatch) {
     uport.requestCredentials({
       requested: ['name', 'avatar', 'phone', 'country'],
-      notifications: true,
-    }).then((userProfile) => {
-      const userAddress = MNID.decode(userProfile.address);
-      const specificNetworkAddress = userAddress.address
-      // console.log(userAddress)
-      console.log(specificNetworkAddress);
-      $.ajax({
-        url: "https://us-central1-buidlbox-dev.cloudfunctions.net/queryUsers?userAddress=" + specificNetworkAddress,
-      }).done(function(data){
-        var isRegistered = data;
-        if (isRegistered){
-          console.log("User is registered");
-          issueToken(specificNetworkAddress, 1);
-        } else {
-          console.log("User is not registered");
-          // TODO: Add a notification on UI for not registered.
-        }
-      })
+      notifications: true},
+      (uri) => {
+
+        const qr = kjua({
+          text: uri,
+          fill: '#cc0000',
+          size: 400,
+          back: 'rgba(255,255,255,1)',
+          label: "1",
+          mode:'label'
+        })
+    
+        // Create wrapping link for mobile touch
+        console.log(qr);
+        let aTag = document.createElement('a')
+        aTag.href = uri
+    
+        // Nest QR in <a> and inject
+        aTag.appendChild(qr)
+        document.querySelector('.kqr').appendChild(aTag)
+      }).then((userProfile) => {
+        // need name, avatar, rinkebyAddress (specificNetworkAddress)
+        console.log(userProfile);
+        const userAddress = MNID.decode(userProfile.address);
+        const specificNetworkAddress = userAddress.address
+        console.log(specificNetworkAddress);
+        
+        // Check user is registered for event
+        $.ajax({
+          url: "https://us-central1-buidlbox-dev.cloudfunctions.net/queryUsers?userAddress=" + specificNetworkAddress,
+        }).done(function(data){
+          var isRegistered = data;
+          if (isRegistered){
+            console.log("User is registered");
+            issueToken(specificNetworkAddress, 1);
+          } else {
+            console.log("User is not registered");
+            // TODO: Add a notification on UI for not registered.
+          }
+        })
 
 
 
